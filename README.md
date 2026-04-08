@@ -1,59 +1,42 @@
-# Tic‑Tac‑Toe
+# Tic Tac Toe with AI
 
-## Overview
+A classic Tic Tac Toe game where you can play against an AI opponent with three difficulty levels.
 
-This is a simple browser‑based Tic‑Tac‑Toe game written in plain HTML, CSS and JavaScript.  The project demonstrates:
+## How to Play
 
-* A 3×3 grid rendered with a table.
-* Two‑player turn logic.
-* Win/draw detection.
-* Basic styling and responsive layout.
+1. You play as X, the AI plays as O
+2. Click on any empty cell to make your move
+3. The AI will automatically make its move after yours
+4. Try to get three of your marks in a row (horizontally, vertically, or diagonally) to win
 
-The code is intentionally lightweight so it can be used as a teaching example or a starting point for more advanced projects.
+## Difficulty Levels
 
-## Getting Started
+- **Easy**: AI makes random moves
+- **Medium**: AI makes smart moves 50% of the time
+- **Hard**: AI uses minimax algorithm for optimal play (unbeatable)
 
-1. Clone or download the repository.
-2. Open `index.html` in a web browser.
+## Features
 
-No build step is required – the game runs entirely in the browser.
+- Player vs AI gameplay
+- Three difficulty levels
+- Visual indication when AI is thinking
+- Win/draw detection
+- Reset button
+- Responsive design
 
-## Project Structure
+## Game Controls
 
-```
-├─ index.html      # The game board and UI
-├─ script.js       # Game logic and event handling
-├─ styles.css      # Layout and visual styling
-└─ README.md       # This documentation
-```
+- **Reset Game**: Start a new game
+- **Difficulty Buttons**: Switch between Easy, Medium, and Hard difficulty levels
 
-## How It Works
+## Requirements
 
-### index.html
-The HTML file contains a 3×3 table with `data-row` and `data-col` attributes.  Each cell has a click listener that calls `handleCellClick` from `script.js`.
+- Modern web browser (Chrome, Firefox, Safari, Edge)
 
-### script.js
-The script keeps track of the current player (`'X'` or `'O'`) and the board state in a 2‑D array.  After each move it:
+## Development
 
-1. Updates the cell text.
-2. Checks for a win or draw.
-3. Switches the player.
-
-The win check iterates over rows, columns and diagonals.  If a win is found, an alert is shown and the board is reset.
-
-### styles.css
-The CSS uses a simple grid layout with a fixed size for the cells.  The `:hover` pseudo‑class gives a visual cue when a cell is clickable.
-
-## Extending the Project
-
-* **Add AI** – Replace the second player with a simple minimax algorithm.
-* **Persist state** – Store the board in `localStorage` to survive page reloads.
-* **Add animations** – Use CSS transitions for a smoother experience.
+This game was built with HTML, CSS, and JavaScript. The AI uses the minimax algorithm for optimal decision making in Hard mode.
 
 ## License
 
-This project is released under the MIT License.
-
----
-
-Happy coding!
+This project is open source and available under the MIT License.
