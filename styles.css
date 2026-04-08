@@ -87,6 +87,7 @@ h1 {
     border-radius: 10px;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 20px;
 }
 
 .reset-btn:hover {
@@ -95,5 +96,48 @@ h1 {
 }
 
 .reset-btn:active {
+    transform: translateY(0);
+}
+
+.difficulty {
+    margin-top: 20px;
+}
+
+.difficulty h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: #333;
+    font-weight: bold;
+}
+
+.difficulty-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.difficulty-btn {
+    padding: 10px 20px;
+    font-size: 1.1em;
+    border: 2px solid #333;
+    border-radius: 5px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.difficulty-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.difficulty-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.difficulty-btn:active {
     transform: translateY(0);
 }
