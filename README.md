@@ -1,59 +1,69 @@
-# Tic‑Tac‑Toe
+# Tic Tac Toe
 
-## Overview
+A complete, self-contained tic-tac-toe menu system with both human vs human and human vs AI game modes, featuring responsive design, difficulty levels (Easy, Medium, Hard), and intuitive navigation with back buttons to return to the main menu. Now supports dynamic board sizes from 3x3 to 6x6 with updated win conditions.
 
-This is a simple browser‑based Tic‑Tac‑Toe game written in plain HTML, CSS and JavaScript.  The project demonstrates:
+## Features
 
-* A 3×3 grid rendered with a table.
-* Two‑player turn logic.
-* Win/draw detection.
-* Basic styling and responsive layout.
+- **Main Menu**: Clean, modern interface with gradient background and glass-morphism container
+- **Game Modes**:
+  - Human vs Human: Two-player local gameplay
+  - Human vs AI: Play against computer with three difficulty levels (Easy, Medium, Hard)
+- **Dynamic Board Sizes**: Choose from 3x3, 4x4, 5x5, or 6x6 boards
+- **Adaptive Win Conditions**: 3 in a row for 3x3, 4 in a row for 4x4 and 5x5, 5 in a row for 6x6
+- **Navigation**: Back buttons on all game screens to return to the main menu
+- **Responsive Design**: Works on mobile and desktop devices
+- **Visual Enhancements**: 
+  - White rectangle with curved edges (glass-morphism effect)
+  - Smooth animations and hover effects
+  - Color-coded X and O symbols
 
-The code is intentionally lightweight so it can be used as a teaching example or a starting point for more advanced projects.
+## AI Difficulty Levels
 
-## Getting Started
+The Human vs AI game mode features three distinct difficulty levels:
 
-1. Clone or download the repository.
-2. Open `index.html` in a web browser.
+- **Easy Mode**: The AI makes random moves, providing a good starting challenge for beginners. It will occasionally make suboptimal moves to give the player a chance to win.
 
-No build step is required – the game runs entirely in the browser.
+- **Medium Mode**: The AI uses a combination of strategies, making it more challenging than Easy mode. It will block winning moves by the player and attempt to create its own winning opportunities, but may still make occasional mistakes.
 
-## Project Structure
+- **Hard Mode**: The AI implements the minimax algorithm to make optimal moves, making it extremely challenging. It will never lose and will always either win or force a draw against a human player.
 
-```
-├─ index.html      # The game board and UI
-├─ script.js       # Game logic and event handling
-├─ styles.css      # Layout and visual styling
-└─ README.md       # This documentation
-```
+## Board Size Details
 
-## How It Works
+- **3x3**: 3 in a row to win
+- **4x4**: 4 in a row to win  
+- **5x5**: 4 in a row to win
+- **6x6**: 5 in a row to win
 
-### index.html
-The HTML file contains a 3×3 table with `data-row` and `data-col` attributes.  Each cell has a click listener that calls `handleCellClick` from `script.js`.
+## Files Included
 
-### script.js
-The script keeps track of the current player (`'X'` or `'O'`) and the board state in a 2‑D array.  After each move it:
+- `index.html`: Main menu screen
+- `human-vs-human.html`: Human vs Human game screen
+- `human-vs-ai.html`: Human vs AI game screen
+- `styles.css`: All styling for the application
+- `script.js`: Main menu JavaScript functionality
+- `game-script.js`: Human vs Human game logic
+- `ai-game-script.js`: Human vs AI game logic
 
-1. Updates the cell text.
-2. Checks for a win or draw.
-3. Switches the player.
+## How to Use
 
-The win check iterates over rows, columns and diagonals.  If a win is found, an alert is shown and the board is reset.
+1. Open `index.html` in any modern web browser
+2. Select either "Human vs Human" or "Human vs AI" to start a game
+3. For larger boards, select board size from the dropdown menu before starting
+4. Play the game and use the "Back to Menu" button to return to the main screen at any time
+5. For AI games, select difficulty level before starting
 
-### styles.css
-The CSS uses a simple grid layout with a fixed size for the cells.  The `:hover` pseudo‑class gives a visual cue when a cell is clickable.
+## Live Version
 
-## Extending the Project
+The game is currently hosted and accessible at: [tictactoe.parkerbrown.photos](http://tictactoe.parkerbrown.photos)
 
-* **Add AI** – Replace the second player with a simple minimax algorithm.
-* **Persist state** – Store the board in `localStorage` to survive page reloads.
-* **Add animations** – Use CSS transitions for a smoother experience.
+## Requirements
 
-## License
+- Modern web browser (Chrome, Firefox, Safari, Edge, etc.)
+- No external dependencies - all files are self-contained
 
-This project is released under the MIT License.
+## Customization
 
----
-
-Happy coding!
+The application can be easily customized by modifying:
+- `styles.css` for visual changes
+- Game logic in `game-script.js` and `ai-game-script.js`
+- Menu options in `index.html`

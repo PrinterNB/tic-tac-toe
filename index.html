@@ -7,21 +7,15 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="game-container">
+    <div class="menu-container">
         <h1>Tic Tac Toe</h1>
-        <div class="status" id="status">Player X's turn</div>
-        <div class="board" id="board">
-            <div class="cell" data-index="0"></div>
-            <div class="cell" data-index="1"></div>
-            <div class="cell" data-index="2"></div>
-            <div class="cell" data-index="3"></div>
-            <div class="cell" data-index="4"></div>
-            <div class="cell" data-index="5"></div>
-            <div class="cell" data-index="6"></div>
-            <div class="cell" data-index="7"></div>
-            <div class="cell" data-index="8"></div>
+        <div class="menu-buttons">
+            <button class="menu-btn" onclick="window.location.href='human-vs-human.html'">Human vs Human</button>
+            <button class="menu-btn" onclick="window.location.href='human-vs-ai.html'">Human vs AI</button>
         </div>
-        <button class="reset-btn" id="resetBtn">Reset Game</button>
+        <div class="github-button-container">
+            <button class="github-btn" onclick="window.open('https://github.com/PrinterNB/tic-tac-toe', '_blank')">GitHub</button>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
