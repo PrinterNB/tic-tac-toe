@@ -2,8 +2,6 @@
 
 ## Overview
 
-test
-
 This is a simple browser‑based Tic‑Tac‑Toe game written in plain HTML, CSS and JavaScript.  The project demonstrates:
 
 * A 3×3 grid rendered with a table.
