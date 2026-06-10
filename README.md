@@ -1,69 +1,72 @@
 # Tic Tac Toe
 
-A complete, self-contained tic-tac-toe menu system with both human vs human and human vs AI game modes, featuring responsive design, difficulty levels (Easy, Medium, Hard), and intuitive navigation with back buttons to return to the main menu. Now supports dynamic board sizes from 3x3 to 6x6 with updated win conditions.
+A modern, self-contained browser Tic Tac Toe game with both local multiplayer and single-player (AI) modes. The project is lightweight (no build step or external dependencies) and responsive, designed to run by opening `index.html` in any recent web browser.
 
-## Features
+## Key Features
 
-- **Main Menu**: Clean, modern interface with gradient background and glass-morphism container
-- **Game Modes**:
-  - Human vs Human: Two-player local gameplay
-  - Human vs AI: Play against computer with three difficulty levels (Easy, Medium, Hard)
-- **Dynamic Board Sizes**: Choose from 3x3, 4x4, 5x5, or 6x6 boards
-- **Adaptive Win Conditions**: 3 in a row for 3x3, 4 in a row for 4x4 and 5x5, 5 in a row for 6x6
-- **Navigation**: Back buttons on all game screens to return to the main menu
-- **Responsive Design**: Works on mobile and desktop devices
-- **Visual Enhancements**: 
-  - White rectangle with curved edges (glass-morphism effect)
-  - Smooth animations and hover effects
-  - Color-coded X and O symbols
+- Clean main menu with a mobile-friendly responsive layout
+- Two play modes: local Human vs Human and Human vs AI
+- Board sizes: 3x3, 4x4, 5x5, and 6x6 (see notes on AI below)
+- Adaptive winning rules: variable "in-a-row" length depending on board size
+- Three AI difficulty settings: Easy (random), Medium (mixed), Hard (minimax)
+- Controls: reset game and back-to-menu navigation on every game screen
 
-## AI Difficulty Levels
+## Quick Start
 
-The Human vs AI game mode features three distinct difficulty levels:
+1. Open `index.html` in your browser.
+2. Choose a mode: Human vs Human or Human vs AI.
+3. (Human vs Human) Select board size from the dropdown (3–6).
+4. (Human vs AI) Select difficulty (Easy, Medium, Hard) then play.
+5. Use the `Reset Game` button to restart and `Back to Menu` to return.
 
-- **Easy Mode**: The AI makes random moves, providing a good starting challenge for beginners. It will occasionally make suboptimal moves to give the player a chance to win.
+## Board Sizes & Winning Rules
 
-- **Medium Mode**: The AI uses a combination of strategies, making it more challenging than Easy mode. It will block winning moves by the player and attempt to create its own winning opportunities, but may still make occasional mistakes.
+- 3x3 → 3 in a row to win
+- 4x4 → 4 in a row to win
+- 5x5 → 4 in a row to win
+- 6x6 → 5 in a row to win
 
-- **Hard Mode**: The AI implements the minimax algorithm to make optimal moves, making it extremely challenging. It will never lose and will always either win or force a draw against a human player.
+Note: the Human vs AI HTML/UI does not include a board-size selector and the AI script defaults to a 3x3 board (`ai-game-script.js` currently sets `boardSize = 3`). The AI logic includes safeguards to limit recursion depth on larger boards, but the default AI mode is best experienced on 3x3.
 
-## Board Size Details
+## AI Behaviour
 
-- **3x3**: 3 in a row to win
-- **4x4**: 4 in a row to win  
-- **5x5**: 4 in a row to win
-- **6x6**: 5 in a row to win
+- Easy: picks a random available move.
+- Medium: mixes random and minimax choices (roughly 50/50), so it is challenging but not perfect.
+- Hard: uses a minimax implementation with a depth cap to choose optimal moves; on small boards this is effectively unbeatable, but performance may be limited on larger boards.
 
-## Files Included
+## Files
 
-- `index.html`: Main menu screen
-- `human-vs-human.html`: Human vs Human game screen
-- `human-vs-ai.html`: Human vs AI game screen
-- `styles.css`: All styling for the application
-- `script.js`: Main menu JavaScript functionality
-- `game-script.js`: Human vs Human game logic
-- `ai-game-script.js`: Human vs AI game logic
+- `index.html` — Main menu and navigation
+- `human-vs-human.html` — Local two-player game UI
+- `human-vs-ai.html` — Single-player UI (difficulty controls)
+- `styles.css` — Styling for menu and game screens
+- `script.js` — Main menu interactions and navigation
+- `game-script.js` — Human vs Human game logic (board rendering, win/draw logic, board-size selector)
+- `ai-game-script.js` — Human vs AI logic (minimax, difficulty modes, AI move handling)
 
-## How to Use
+## Notes for Developers
 
-1. Open `index.html` in any modern web browser
-2. Select either "Human vs Human" or "Human vs AI" to start a game
-3. For larger boards, select board size from the dropdown menu before starting
-4. Play the game and use the "Back to Menu" button to return to the main screen at any time
-5. For AI games, select difficulty level before starting
+- The win/draw logic is implemented to support variable board sizes and an adjustable `winningLength` derived from the selected `boardSize`.
+- `ai-game-script.js` contains a `minimax` function with a depth guard (returns a neutral score when depth > 10) to prevent excessive recursion on larger boards.
+- The `ai-game-script.js` sets `boardSize = 3` by default; to enable AI on larger boards you can add a selector to the AI UI and wire it to the script (see `game-script.js` for a reference implementation).
 
-## Live Version
+## Live Demo
 
-The game is currently hosted and accessible at: [tictactoe.parkerbrown.photos](http://tictactoe.parkerbrown.photos)
+The game has been hosted at: http://tictactoe.parkerbrown.photos
 
-## Requirements
+## Browser Support
 
-- Modern web browser (Chrome, Firefox, Safari, Edge, etc.)
-- No external dependencies - all files are self-contained
+Works in modern browsers (Chrome, Firefox, Safari, Edge). No build tools are required — open `index.html` directly.
 
 ## Customization
 
-The application can be easily customized by modifying:
-- `styles.css` for visual changes
-- Game logic in `game-script.js` and `ai-game-script.js`
-- Menu options in `index.html`
+- Visual tweaks: edit `styles.css`.
+- Gameplay rules or board sizes: edit `game-script.js` and `ai-game-script.js`.
+- Add features like score tracking or online multiplayer by extending the JavaScript logic and adding persistent storage or networking.
+
+## Contributing
+
+Contributions are welcome. Please open issues or pull requests with clear descriptions of changes.
+
+---
+_Minimal, dependency-free project intended for learning and quick demos._
