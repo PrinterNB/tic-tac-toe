@@ -7,6 +7,10 @@ const statusElement = document.getElementById('status');
 const resetBtn = document.getElementById('resetBtn');
 const backBtn = document.getElementById('backBtn');
 const roomMeta = document.getElementById('room-meta');
+const lobbySetupPanel = document.getElementById('lobby-setup-panel');
+const lobbySetupStatus = document.getElementById('lobby-setup-status');
+const lobbyLetterSelect = document.getElementById('lobby-letter-select');
+const saveLobbyLetterBtn = document.getElementById('save-lobby-letter-btn');
 const copyInviteLinkBtn = document.getElementById('copy-invite-link-btn');
 const inviteLinkStatus = document.getElementById('invite-link-status');
 
@@ -80,7 +84,16 @@ function renderBoard(room) {
 }
 
 function updateStatus(room) {
-    const role = room.players.X === clientIdParam ? 'X' : room.players.O === clientIdParam ? 'O' : '?';
+    const role = room.yourLetter || room.yourRole || '?';
+    if (room.source === 'lobby' && room.status === 'lobby') {
+        if ((room.participants || []).length < 2) {
+            statusElement.textContent = 'Waiting for another player to join the lobby.';
+        } else {
+            statusElement.textContent = 'Both players are here. Choose unique letters X, O, Y, or Z to start.';
+        }
+        return;
+    }
+
     if (room.status === 'waiting') {
         statusElement.textContent = room.code ? `Waiting for an opponent. Share code ${room.code}.` : 'Waiting for an opponent to accept the invite.';
         return;
@@ -106,11 +119,75 @@ function updateStatus(room) {
 }
 
 function updateRoomMeta(room) {
-    const playerNames = [`X: ${room.playerNames.X || 'Waiting'}`, `O: ${room.playerNames.O || 'Waiting'}`];
-    roomMeta.textContent = `Code ${room.code || 'private'} · ${room.boardSize}x${room.boardSize} · ${playerNames.join(' · ')}`;
+    if (room.source === 'lobby') {
+        const participantSummary = (room.participants || []).map((participant) => {
+            return `${participant.username} (${participant.letter || 'not set'})`;
+        }).join(' · ');
+        roomMeta.textContent = `Lobby code ${room.code || 'private'} · ${room.boardSize}x${room.boardSize} · ${room.winningLength} in a row · ${participantSummary || 'Waiting for players'}`;
+    } else {
+        const playerNames = [`X: ${room.playerNames.X || 'Waiting'}`, `O: ${room.playerNames.O || 'Waiting'}`];
+        roomMeta.textContent = `Code ${room.code || 'private'} · ${room.boardSize}x${room.boardSize} · ${playerNames.join(' · ')}`;
+    }
 
     if (copyInviteLinkBtn) {
         copyInviteLinkBtn.hidden = !room.code;
+    }
+}
+
+function renderLobbySetup(room) {
+    if (!lobbySetupPanel || !lobbySetupStatus || !lobbyLetterSelect || !saveLobbyLetterBtn) {
+        return;
+    }
+
+    if (room.source !== 'lobby') {
+        lobbySetupPanel.classList.add('hidden');
+        return;
+    }
+
+    if (room.status === 'active' || room.status === 'finished') {
+        lobbySetupPanel.classList.add('hidden');
+        return;
+    }
+
+    const currentParticipant = (room.participants || []).find((participant) => participant.clientId === clientIdParam);
+    const takenLetters = new Set((room.participants || [])
+        .filter((participant) => participant.clientId !== clientIdParam)
+        .map((participant) => participant.letter)
+        .filter(Boolean));
+    const currentLetter = currentParticipant?.letter || room.yourLetter || ['X', 'O', 'Y', 'Z'].find((letter) => !takenLetters.has(letter)) || 'X';
+
+    lobbySetupPanel.classList.remove('hidden');
+    lobbySetupStatus.textContent = (room.participants || []).length < 2
+        ? 'Waiting for another player to join this 6x6 lobby.'
+        : 'Choose a unique letter to lock in your role.';
+
+    lobbyLetterSelect.innerHTML = ['X', 'O', 'Y', 'Z'].map((letter) => {
+        const disabled = takenLetters.has(letter) && currentLetter !== letter ? 'disabled' : '';
+        const selected = currentLetter === letter ? 'selected' : '';
+        return `<option value="${letter}" ${selected} ${disabled}>${letter}</option>`;
+    }).join('');
+
+    saveLobbyLetterBtn.onclick = saveLobbyLetter;
+}
+
+async function saveLobbyLetter() {
+    if (!currentRoom || currentRoom.source !== 'lobby') {
+        return;
+    }
+
+    const letter = lobbyLetterSelect?.value || 'X';
+    try {
+        await apiFetch('/room/letter', {
+            method: 'POST',
+            body: JSON.stringify({
+                roomId: roomIdParam,
+                clientId: clientIdParam,
+                letter
+            })
+        });
+        await refreshRoom();
+    } catch (error) {
+        statusElement.textContent = error.message;
     }
 }
 
@@ -126,6 +203,7 @@ async function refreshRoom() {
         updateRoomMeta(room);
         renderBoard(room);
         updateStatus(room);
+        renderLobbySetup(room);
     } catch (error) {
         const message = error?.message || 'Unknown error';
         if (message.includes('Room not found') || message.includes('not part of this room')) {

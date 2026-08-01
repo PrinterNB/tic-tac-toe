@@ -63,6 +63,15 @@
                         <option value="6">6x6 (5 in a row)</option>
                     </select>
                     <button id="create-room-btn" class="menu-btn compact-btn">Generate Code</button>
+                    <label for="lobby-letter-input">Lobby letter</label>
+                    <select id="lobby-letter-input">
+                        <option value="X">X</option>
+                        <option value="O">O</option>
+                        <option value="Y">Y</option>
+                        <option value="Z">Z</option>
+                    </select>
+                    <button id="create-lobby-btn" class="ghost-btn compact-btn">Invite to Lobby</button>
+                    <div class="row-subtitle">Lobby invites use a 6x6 board with 4 in a row to win.</div>
                     <div class="code-box" id="generated-code-box" aria-live="polite"></div>
                     <label for="join-code-input">Join by code</label>
                     <div class="inline-form">

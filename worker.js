@@ -86,22 +86,64 @@ export class LobbyRoom {
         return code;
     }
 
-    getBoardConfig(boardSize) {
+    getBoardConfig(boardSize, winningLength = null) {
         const size = Number(boardSize) || 3;
-        const winningLength = size === 3 ? 3 : size === 6 ? 5 : 4;
-        return { boardSize: size, winningLength };
+        const resolvedWinningLength = Number(winningLength) || (size === 3 ? 3 : size === 6 ? 5 : 4);
+        return { boardSize: size, winningLength: resolvedWinningLength };
     }
 
-    createRoom({ boardSize, ownerClientId, opponentClientId = null, code = null, source = 'code' }) {
+    normalizeLetter(letter) {
+        const normalized = String(letter || '').trim().toUpperCase();
+        return ['X', 'O', 'Y', 'Z'].includes(normalized) ? normalized : null;
+    }
+
+    getLobbyParticipant(room, clientId) {
+        return room.participants?.find((participant) => participant.clientId === clientId) || null;
+    }
+
+    isLobbyParticipant(room, clientId) {
+        return Boolean(this.getLobbyParticipant(room, clientId));
+    }
+
+    getLobbyTakenLetters(room, excludeClientId = null) {
+        return (room.participants || [])
+            .filter((participant) => participant.clientId !== excludeClientId)
+            .map((participant) => participant.letter)
+            .filter(Boolean);
+    }
+
+    activateLobbyRoom(room) {
+        if (room.source !== 'lobby' || room.status === 'active') {
+            return;
+        }
+
+        if ((room.participants || []).length !== 2) {
+            return;
+        }
+
+        const letters = room.participants.map((participant) => participant.letter).filter(Boolean);
+        if (letters.length !== 2 || new Set(letters).size !== 2) {
+            return;
+        }
+
+        room.status = 'active';
+        room.currentTurnClientId = room.hostClientId || room.participants[0].clientId;
+        room.currentPlayer = this.getLobbyParticipant(room, room.currentTurnClientId)?.letter || room.participants[0].letter;
+        room.board = Array(room.boardSize * room.boardSize).fill('');
+        room.updatedAt = Date.now();
+    }
+
+    createRoom({ boardSize, ownerClientId, opponentClientId = null, code = null, source = 'code', winningLength = null, ownerLetter = null }) {
         const roomId = crypto.randomUUID();
         const roomCode = source === 'code' ? (code || this.makeCode()) : null;
-        const { boardSize: resolvedSize, winningLength } = this.getBoardConfig(boardSize);
+        const { boardSize: resolvedSize, winningLength: resolvedWinningLength } = this.getBoardConfig(boardSize, winningLength);
+        const ownerUser = this.getUser(ownerClientId);
         const room = {
             id: roomId,
             code: roomCode,
             source,
             boardSize: resolvedSize,
-            winningLength,
+            winningLength: resolvedWinningLength,
             board: Array(resolvedSize * resolvedSize).fill(''),
             currentPlayer: 'X',
             currentTurnClientId: ownerClientId,
@@ -115,6 +157,23 @@ export class LobbyRoom {
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
+
+        if (source === 'lobby') {
+            room.status = 'lobby';
+            room.hostClientId = ownerClientId;
+            room.currentPlayer = null;
+            room.currentTurnClientId = null;
+            room.participants = [
+                {
+                    clientId: ownerClientId,
+                    username: ownerUser?.username || 'Player 1',
+                    letter: this.normalizeLetter(ownerLetter),
+                    ready: Boolean(ownerLetter)
+                }
+            ];
+            delete room.players;
+            delete room.playerNames;
+        }
 
         this.cache.rooms[roomId] = room;
         if (roomCode) {
@@ -132,6 +191,10 @@ export class LobbyRoom {
     }
 
     getPlayerRole(room, clientId) {
+        if (room.source === 'lobby') {
+            return this.getLobbyParticipant(room, clientId)?.letter || null;
+        }
+
         if (room.players.X === clientId) return 'X';
         if (room.players.O === clientId) return 'O';
         return null;
@@ -207,6 +270,33 @@ export class LobbyRoom {
 
     buildStatePayload(room, clientId) {
         const role = this.getPlayerRole(room, clientId);
+        if (room.source === 'lobby') {
+            const participants = (room.participants || []).map((participant) => ({
+                clientId: participant.clientId,
+                username: participant.username,
+                letter: participant.letter || null,
+                ready: Boolean(participant.letter)
+            }));
+
+            return {
+                roomId: room.id,
+                code: room.code,
+                boardSize: room.boardSize,
+                winningLength: room.winningLength,
+                board: room.board,
+                currentPlayer: room.currentPlayer,
+                currentTurnClientId: room.currentTurnClientId,
+                status: room.status,
+                winner: room.winner,
+                participants,
+                yourRole: role,
+                yourLetter: role,
+                availableLetters: ['X', 'O', 'Y', 'Z'].filter((letter) => !this.getLobbyTakenLetters(room, clientId).includes(letter) || role === letter),
+                source: room.source,
+                hostClientId: room.hostClientId
+            };
+        }
+
         return {
             roomId: room.id,
             code: room.code,
@@ -276,6 +366,10 @@ export class LobbyRoom {
 
         if (url.pathname === '/api/room/join' && request.method === 'POST') {
             return this.joinRoomByCode(request, state);
+        }
+
+        if (url.pathname === '/api/room/letter' && request.method === 'POST') {
+            return this.setRoomLetter(request, state);
         }
 
         if (url.pathname === '/api/room' && request.method === 'GET') {
@@ -479,15 +573,31 @@ export class LobbyRoom {
     async createRoomFromCode(request, state) {
         const body = await this.parseJson(request);
         const clientId = body?.clientId;
-        const boardSize = Number(body?.boardSize) || 3;
+        const mode = String(body?.mode || 'code').toLowerCase();
+        const boardSize = Number(body?.boardSize) || (mode === 'lobby' ? 6 : 3);
+        const winningLength = Number(body?.winningLength) || (mode === 'lobby' ? 4 : null);
+        const ownerLetter = this.normalizeLetter(body?.letter) || 'X';
         const user = state.users[clientId];
 
         if (!clientId || !user) {
             return this.error('You need to register first.', 404);
         }
 
-        const room = this.createRoom({ boardSize, ownerClientId: clientId, source: 'code' });
-        room.playerNames.X = user.username;
+        const room = this.createRoom({
+            boardSize,
+            winningLength,
+            ownerClientId: clientId,
+            source: mode === 'lobby' ? 'lobby' : 'code',
+            ownerLetter
+        });
+
+        if (room.source === 'lobby') {
+            room.participants[0].letter = ownerLetter;
+            room.participants[0].ready = true;
+        } else {
+            room.playerNames.X = user.username;
+        }
+
         user.roomId = room.id;
         await this.save();
         this.notifyLobbyChange();
@@ -514,6 +624,28 @@ export class LobbyRoom {
             return this.error('That room is no longer available.');
         }
 
+        if (room.source === 'lobby') {
+            if ((room.participants || []).some((participant) => participant.clientId === clientId)) {
+                return this.json({ ok: true, roomId: room.id });
+            }
+
+            if ((room.participants || []).length >= 2) {
+                return this.error('That room is already full.');
+            }
+
+            room.participants.push({
+                clientId,
+                username: user.username,
+                letter: null,
+                ready: false
+            });
+            user.roomId = room.id;
+            room.status = 'lobby';
+            await this.save();
+            this.notifyLobbyChange();
+            return this.json({ ok: true, roomId: room.id });
+        }
+
         if (room.players.O) {
             return this.error('That room is already full.');
         }
@@ -530,6 +662,41 @@ export class LobbyRoom {
         return this.json({ ok: true, roomId: room.id });
     }
 
+    async setRoomLetter(request, state) {
+        const body = await this.parseJson(request);
+        const roomId = body?.roomId;
+        const clientId = body?.clientId;
+        const letter = this.normalizeLetter(body?.letter);
+        const room = this.getRoom(roomId);
+
+        if (!room || room.source !== 'lobby') {
+            return this.error('Lobby room not found.', 404);
+        }
+
+        if (!letter) {
+            return this.error('Choose X, O, Y, or Z.');
+        }
+
+        const participant = this.getLobbyParticipant(room, clientId);
+        if (!participant) {
+            return this.error('You are not part of this room.', 403);
+        }
+
+        const takenLetters = this.getLobbyTakenLetters(room, clientId);
+        if (takenLetters.includes(letter)) {
+            return this.error('That letter is already taken.');
+        }
+
+        participant.letter = letter;
+        participant.ready = true;
+        room.updatedAt = Date.now();
+        this.activateLobbyRoom(room);
+
+        await this.save();
+        this.notifyLobbyChange();
+        return this.json(this.buildStatePayload(room, clientId));
+    }
+
     async getRoomState(url, state) {
         const roomId = url.searchParams.get('roomId');
         const clientId = url.searchParams.get('clientId');
@@ -539,7 +706,11 @@ export class LobbyRoom {
             return this.error('Room not found.', 404);
         }
 
-        if (this.getPlayerRole(room, clientId) === null) {
+        if (room.source === 'lobby') {
+            if (!this.isLobbyParticipant(room, clientId)) {
+                return this.error('You are not part of this room.', 403);
+            }
+        } else if (this.getPlayerRole(room, clientId) === null) {
             return this.error('You are not part of this room.', 403);
         }
 
@@ -575,8 +746,14 @@ export class LobbyRoom {
         }
 
         room.board[index] = role;
-        room.currentPlayer = room.currentPlayer === 'X' ? 'O' : 'X';
-        room.currentTurnClientId = room.players[room.currentPlayer];
+        if (room.source === 'lobby') {
+            const nextParticipant = (room.participants || []).find((participant) => participant.clientId !== clientId);
+            room.currentTurnClientId = nextParticipant?.clientId || null;
+            room.currentPlayer = nextParticipant?.letter || null;
+        } else {
+            room.currentPlayer = room.currentPlayer === 'X' ? 'O' : 'X';
+            room.currentTurnClientId = room.players[room.currentPlayer];
+        }
         room.updatedAt = Date.now();
 
         if (this.checkWinner(room.board, room.boardSize, room.winningLength, role)) {
@@ -602,14 +779,26 @@ export class LobbyRoom {
             return this.error('Room not found.', 404);
         }
 
-        if (!this.getPlayerRole(room, clientId)) {
+        if (room.source === 'lobby') {
+            if (!this.isLobbyParticipant(room, clientId)) {
+                return this.error('You are not part of this room.', 403);
+            }
+        } else if (!this.getPlayerRole(room, clientId)) {
             return this.error('You are not part of this room.', 403);
         }
 
         room.board = Array(room.boardSize * room.boardSize).fill('');
-        room.currentPlayer = 'X';
-        room.currentTurnClientId = room.players.X;
-        room.status = room.players.O ? 'active' : 'waiting';
+        if (room.source === 'lobby') {
+            this.activateLobbyRoom(room);
+            if (room.status !== 'active') {
+                room.currentPlayer = null;
+                room.currentTurnClientId = null;
+            }
+        } else {
+            room.currentPlayer = 'X';
+            room.currentTurnClientId = room.players.X;
+            room.status = room.players.O ? 'active' : 'waiting';
+        }
         room.winner = null;
         room.updatedAt = Date.now();
 
@@ -630,7 +819,11 @@ export class LobbyRoom {
         }
 
         if (room) {
-            for (const participantId of Object.values(room.players).filter(Boolean)) {
+            const participantIds = room.source === 'lobby'
+                ? (room.participants || []).map((participant) => participant.clientId)
+                : Object.values(room.players).filter(Boolean);
+
+            for (const participantId of participantIds) {
                 const participantUser = state.users[participantId];
                 if (participantUser) {
                     participantUser.roomId = null;
