@@ -374,7 +374,8 @@ export class LobbyRoom {
             .map(([otherClientId, user]) => ({
                 clientId: otherClientId,
                 username: user.username,
-                roomLabel: user.roomId ? `In match` : ''
+                roomLabel: user.roomId ? `In match` : '',
+                boardSize: Number(user.boardSize) || 3
             }))
             .sort((left, right) => left.username.localeCompare(right.username));
 
@@ -624,24 +625,22 @@ export class LobbyRoom {
         const room = this.getRoom(roomId);
         const user = state.users[clientId];
 
-        if (room && user) {
-            const role = this.getPlayerRole(room, clientId);
-            if (role) {
-                room.players[role] = null;
-                room.playerNames[role] = null;
-                room.winner = null;
-                user.roomId = null;
+        if (user) {
+            user.roomId = null;
+        }
 
-                if (room.source === 'code' && !room.players.X && !room.players.O) {
-                    if (room.code) {
-                        delete this.cache.codes[room.code];
-                    }
-                    delete this.cache.rooms[room.id];
-                } else {
-                    room.status = room.players.X && room.players.O ? 'active' : 'waiting';
-                    room.currentTurnClientId = room.players.X || room.players.O || null;
+        if (room) {
+            for (const participantId of Object.values(room.players).filter(Boolean)) {
+                const participantUser = state.users[participantId];
+                if (participantUser) {
+                    participantUser.roomId = null;
                 }
             }
+
+            if (room.code) {
+                delete this.cache.codes[room.code];
+            }
+            delete this.cache.rooms[room.id];
         }
 
         await this.save();

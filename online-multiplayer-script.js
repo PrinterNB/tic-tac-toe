@@ -50,6 +50,17 @@ function getBoardSize() {
     return parseInt(roomBoardSize.value, 10) || parseInt(boardSizeInput.value, 10) || 3;
 }
 
+function syncBoardSizeSelection(value = null) {
+    const selectedValue = String(value ?? localStorage.getItem(boardSizeKey) ?? 3);
+    if (boardSizeInput) {
+        boardSizeInput.value = selectedValue;
+    }
+    if (roomBoardSize) {
+        roomBoardSize.value = selectedValue;
+    }
+    localStorage.setItem(boardSizeKey, selectedValue);
+}
+
 function setLobbyMessage(message, error = false) {
     lobbyStatus.textContent = message;
     lobbyStatus.classList.toggle('error', error);
@@ -175,13 +186,14 @@ function renderUsers(users) {
     }
 
     usersList.innerHTML = users.map((user) => {
-        const statusText = user.roomLabel ? ` - ${user.roomLabel}` : '';
+        const statusText = user.roomLabel ? ` · ${user.roomLabel}` : '';
         const isSelf = user.clientId === clientId;
+        const boardSizeLabel = `Board ${user.boardSize || 3}x${user.boardSize || 3}`;
         return `
             <div class="list-row">
                 <div>
                     <strong>${escapeHtml(user.username)}</strong>
-                    <div class="row-subtitle">${isSelf ? 'You' : 'Online'}${statusText}</div>
+                    <div class="row-subtitle">${isSelf ? 'You' : 'Online'}${statusText} · ${boardSizeLabel}</div>
                 </div>
                 ${isSelf ? '<span class="pill">You</span>' : `<button class="ghost-btn invite-btn" data-client-id="${escapeHtml(user.clientId)}">Invite</button>`}
             </div>
@@ -263,7 +275,7 @@ async function registerUsername(event) {
 
         username = candidate;
         localStorage.setItem(usernameKey, username);
-        localStorage.setItem(boardSizeKey, String(getBoardSize()));
+        syncBoardSizeSelection(getBoardSize());
         showUsernameError('');
         setRegisteredUi(true);
         setLobbyMessage(`Signed in as ${username}.`);
@@ -286,7 +298,7 @@ async function refreshLobby() {
     try {
         const state = await apiFetch(`/state?clientId=${encodeURIComponent(clientId)}`);
         lobbySummary.textContent = `Signed in as ${username}. ${state.users.length} player${state.users.length === 1 ? '' : 's'} online.`;
-        roomBoardSize.value = String(state.defaultBoardSize || localStorage.getItem(boardSizeKey) || 3);
+        syncBoardSizeSelection(localStorage.getItem(boardSizeKey) || String(state.defaultBoardSize || 3));
         renderUsers(state.users.filter((user) => user.clientId !== clientId));
         renderInvites(state.incomingInvites);
 
@@ -481,6 +493,12 @@ async function attemptAutoRegister() {
     }
 }
 
+[boardSizeInput, roomBoardSize].filter(Boolean).forEach((select) => {
+    select.addEventListener('change', () => {
+        syncBoardSizeSelection(select.value);
+    });
+});
+
 usernameForm.addEventListener('submit', registerUsername);
 createRoomBtn.addEventListener('click', createRoom);
 joinCodeBtn.addEventListener('click', joinRoomByCode);
@@ -491,8 +509,7 @@ leaveLobbyBtn.addEventListener('click', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    boardSizeInput.value = localStorage.getItem(boardSizeKey) || '3';
-    roomBoardSize.value = boardSizeInput.value;
+    syncBoardSizeSelection(localStorage.getItem(boardSizeKey) || '3');
     usernameInput.value = username;
     if (pendingJoinCode) {
         joinCodeInput.value = pendingJoinCode;

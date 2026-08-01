@@ -127,7 +127,12 @@ async function refreshRoom() {
         renderBoard(room);
         updateStatus(room);
     } catch (error) {
-        statusElement.textContent = error.message;
+        const message = error?.message || 'Unknown error';
+        if (message.includes('Room not found') || message.includes('not part of this room')) {
+            window.location.href = 'online-multiplayer.html';
+            return;
+        }
+        statusElement.textContent = message;
     }
 }
 
