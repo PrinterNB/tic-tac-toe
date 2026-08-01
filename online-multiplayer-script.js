@@ -370,14 +370,8 @@ async function createRoom() {
         });
 
         generatedCodeBox.textContent = `Code: ${response.code}`;
-        const inviteLink = getInviteLink(response.code);
-        try {
-            await navigator.clipboard.writeText(inviteLink);
-            setInviteLinkStatus('Invite link copied to clipboard.');
-        } catch {
-            setInviteLinkStatus(inviteLink);
-        }
-        setLobbyMessage(`Room created with code ${response.code}. Send the invite link to anyone, even if they are not in the lobby.`);
+        setInviteLinkStatus(`Invite link ready.`);
+        setLobbyMessage(`Room created with code ${response.code}. Share it or wait for someone to join.`);
         const params = new URLSearchParams({ roomId: response.roomId, clientId });
         window.location.href = `online-game.html?${params.toString()}`;
     } catch (error) {
