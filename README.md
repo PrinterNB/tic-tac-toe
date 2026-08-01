@@ -8,7 +8,7 @@ A modern, self-contained browser Tic Tac Toe game with local multiplayer, single
 - Three play modes: local Human vs Human, Human vs AI, and Online Multiplayer
 - Board sizes: 3x3, 4x4, 5x5, and 6x6, with adaptive winning lengths based on board size
 - Three AI difficulty settings: Easy (random), Medium (mixed), and Hard (minimax)
-- Online multiplayer with unique usernames, live lobby presence, websocket updates, invite-based matches, and one-time room codes
+- Online multiplayer with unique usernames, live lobby presence, websocket updates, invite-based matches, one-time room codes, live board-size syncing, and shared room teardown when a match is left
 - Mobile invite banner in the lobby plus shareable invite links on online matches
 - Controls for resetting the game and returning to the menu on every game screen
 
@@ -81,6 +81,7 @@ Works in modern browsers, including Chrome, Firefox, Safari, and Edge. No build 
 - Clicking a player in the live lobby creates a pending invite.
 - Incoming invites appear in a mobile-friendly banner at the top of the lobby, along with the invite list.
 - Generating a code creates a one-time private room.
+- The lobby shows each player’s selected board size, and changing your size updates the lobby live for others without a refresh.
 - The online match board uses the same board-size rules as the local Human vs Human mode.
 - Code-room matches can generate a shareable invite link from the match screen.
 - For local development and deployment, use Wrangler so the Worker, assets binding, and Durable Object bindings are available.
