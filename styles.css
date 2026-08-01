@@ -366,6 +366,22 @@ h1 {
     padding: 1rem 0;
 }
 
+.invite-banner {
+    position: sticky;
+    top: 0.75rem;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 18px;
+    background: rgba(12, 18, 34, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
 .online-card {
     background: rgba(9, 14, 28, 0.72);
     border: 1px solid rgba(255, 255, 255, 0.14);
@@ -486,6 +502,11 @@ h1 {
     font-weight: 700;
 }
 
+.compact-action-btn {
+    width: 100%;
+    margin-top: 0.75rem;
+}
+
 .ghost-btn:hover {
     transform: translateY(-2px);
     background: rgba(255, 255, 255, 0.16);
@@ -541,6 +562,10 @@ h1 {
     color: #ff9e9e;
 }
 
+.invite-banner .row-subtitle {
+    margin-top: 0.15rem;
+}
+
 .hidden {
     display: none !important;
 }
@@ -574,6 +599,15 @@ h1 {
     .online-shell {
         width: min(100vw - 1rem, 1100px);
         margin: 0.5rem auto;
+    }
+
+    .invite-banner {
+        position: fixed;
+        top: 0.5rem;
+        left: 0.5rem;
+        right: 0.5rem;
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     .online-card {

@@ -19,11 +19,22 @@ const createRoomBtn = document.getElementById('create-room-btn');
 const joinCodeBtn = document.getElementById('join-code-btn');
 const joinCodeInput = document.getElementById('join-code-input');
 const generatedCodeBox = document.getElementById('generated-code-box');
+const copyInviteLinkBtn = document.getElementById('copy-invite-link-btn');
+const inviteLinkStatus = document.getElementById('invite-link-status');
+const inviteBanner = document.getElementById('invite-banner');
+const inviteBannerTitle = document.getElementById('invite-banner-title');
+const inviteBannerSubtitle = document.getElementById('invite-banner-subtitle');
+const inviteBannerAccept = document.getElementById('invite-banner-accept');
+const inviteBannerDecline = document.getElementById('invite-banner-decline');
+
+const pendingJoinCode = new URLSearchParams(window.location.search).get('join')?.trim().toUpperCase() || '';
+let activeBannerInviteId = null;
 
 let clientId = getClientId();
 let username = localStorage.getItem(usernameKey) || '';
 let pollTimer = null;
 let heartbeatTimer = null;
+let lobbySocket = null;
 let registered = false;
 
 function getClientId() {
@@ -42,6 +53,14 @@ function getBoardSize() {
 function setLobbyMessage(message, error = false) {
     lobbyStatus.textContent = message;
     lobbyStatus.classList.toggle('error', error);
+}
+
+function setInviteLinkStatus(message, error = false) {
+    if (!inviteLinkStatus) {
+        return;
+    }
+    inviteLinkStatus.textContent = message;
+    inviteLinkStatus.classList.toggle('error', error);
 }
 
 function showUsernameError(message) {
@@ -78,6 +97,66 @@ async function apiFetch(path, options = {}) {
 function setRegisteredUi(isRegistered) {
     usernameCard.classList.toggle('hidden', isRegistered);
     lobbyCard.classList.toggle('hidden', !isRegistered);
+}
+
+function getInviteLink(code) {
+    return `${window.location.origin}${window.location.pathname}?join=${encodeURIComponent(code)}`;
+}
+
+function renderInviteBanner(invites) {
+    if (!inviteBanner || !inviteBannerTitle || !inviteBannerSubtitle || !inviteBannerAccept || !inviteBannerDecline) {
+        return;
+    }
+
+    const invite = invites[0];
+    if (!invite) {
+        inviteBanner.classList.add('hidden');
+        activeBannerInviteId = null;
+        return;
+    }
+
+    activeBannerInviteId = invite.id;
+    inviteBannerTitle.textContent = `Invite from ${invite.fromUsername}`;
+    inviteBannerSubtitle.textContent = `Board ${invite.boardSize}x${invite.boardSize}. Accept it now or scroll to see all invites.`;
+    inviteBanner.classList.remove('hidden');
+    inviteBannerAccept.onclick = () => respondToInvite(invite.id, true);
+    inviteBannerDecline.onclick = () => respondToInvite(invite.id, false);
+}
+
+function connectLobbySocket() {
+    if (lobbySocket) {
+        try {
+            lobbySocket.close();
+        } catch {
+            // ignore
+        }
+    }
+
+    try {
+        const socketUrl = new URL(`${window.location.origin}/api/lobby/subscribe`);
+        socketUrl.protocol = socketUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+        socketUrl.searchParams.set('clientId', clientId);
+
+        lobbySocket = new WebSocket(socketUrl.toString());
+        lobbySocket.addEventListener('message', (event) => {
+            try {
+                const payload = JSON.parse(event.data);
+                if (payload?.type === 'lobby-updated') {
+                    refreshLobby();
+                }
+            } catch {
+                refreshLobby();
+            }
+        });
+        lobbySocket.addEventListener('close', () => {
+            lobbySocket = null;
+        });
+        lobbySocket.addEventListener('error', () => {
+            lobbySocket = null;
+        });
+    } catch {
+        lobbySocket = null;
+    }
 }
 
 function ensureGameRedirect(state) {
@@ -118,6 +197,8 @@ function renderUsers(users) {
 }
 
 function renderInvites(invites) {
+    renderInviteBanner(invites);
+
     if (!invites.length) {
         invitesList.innerHTML = '<div class="empty-state">No pending invites.</div>';
         return;
@@ -186,7 +267,11 @@ async function registerUsername(event) {
         showUsernameError('');
         setRegisteredUi(true);
         setLobbyMessage(`Signed in as ${username}.`);
+        connectLobbySocket();
         await refreshLobby();
+        if (pendingJoinCode) {
+            joinCodeInput.value = pendingJoinCode;
+        }
         startPolling();
     } catch (error) {
         showUsernameError(error.message);
@@ -273,6 +358,7 @@ async function createRoom() {
         });
 
         generatedCodeBox.textContent = `Code: ${response.code}`;
+        setInviteLinkStatus(`Invite link ready.`);
         setLobbyMessage(`Room created with code ${response.code}. Share it or wait for someone to join.`);
         const params = new URLSearchParams({ roomId: response.roomId, clientId });
         window.location.href = `online-game.html?${params.toString()}`;
@@ -301,6 +387,22 @@ async function joinRoomByCode() {
         window.location.href = `online-game.html?${params.toString()}`;
     } catch (error) {
         setLobbyMessage(error.message, true);
+    }
+}
+
+async function copyInviteLink() {
+    const code = generatedCodeBox.textContent.replace('Code: ', '').trim();
+    if (!code) {
+        setInviteLinkStatus('Generate a code first to get an invite link.', true);
+        return;
+    }
+
+    const link = getInviteLink(code);
+    try {
+        await navigator.clipboard.writeText(link);
+        setInviteLinkStatus('Invite link copied to clipboard.');
+    } catch {
+        setInviteLinkStatus(link);
     }
 }
 
@@ -341,6 +443,14 @@ function resetSession() {
         clearInterval(heartbeatTimer);
         heartbeatTimer = null;
     }
+    if (lobbySocket) {
+        try {
+            lobbySocket.close();
+        } catch {
+            // ignore
+        }
+        lobbySocket = null;
+    }
 }
 
 async function attemptAutoRegister() {
@@ -363,6 +473,7 @@ async function attemptAutoRegister() {
         registered = true;
         setRegisteredUi(true);
         setLobbyMessage(`Signed in as ${username}.`);
+        connectLobbySocket();
         await refreshLobby();
         startPolling();
     } catch {
@@ -373,6 +484,7 @@ async function attemptAutoRegister() {
 usernameForm.addEventListener('submit', registerUsername);
 createRoomBtn.addEventListener('click', createRoom);
 joinCodeBtn.addEventListener('click', joinRoomByCode);
+copyInviteLinkBtn?.addEventListener('click', copyInviteLink);
 leaveLobbyBtn.addEventListener('click', () => {
     resetSession();
     setLobbyMessage('Choose a new username to rejoin.');
@@ -382,6 +494,10 @@ document.addEventListener('DOMContentLoaded', () => {
     boardSizeInput.value = localStorage.getItem(boardSizeKey) || '3';
     roomBoardSize.value = boardSizeInput.value;
     usernameInput.value = username;
+    if (pendingJoinCode) {
+        joinCodeInput.value = pendingJoinCode;
+        setLobbyMessage(`Invite link detected. Join code ${pendingJoinCode} is ready.`);
+    }
     if (username) {
         attemptAutoRegister();
     }

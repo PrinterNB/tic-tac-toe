@@ -9,6 +9,17 @@
 </head>
 <body>
     <div class="online-shell">
+        <div class="invite-banner hidden" id="invite-banner" role="status" aria-live="polite">
+            <div>
+                <strong id="invite-banner-title">New invite</strong>
+                <div class="row-subtitle" id="invite-banner-subtitle"></div>
+            </div>
+            <div class="row-actions">
+                <button class="ghost-btn" id="invite-banner-accept">Accept</button>
+                <button class="ghost-btn" id="invite-banner-decline">Decline</button>
+            </div>
+        </div>
+
         <div class="online-card" id="username-card">
             <h1>Online Lobby</h1>
             <p class="helper-text">Pick a unique username to join the live lobby.</p>

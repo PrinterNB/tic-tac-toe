@@ -20,6 +20,7 @@ export class LobbyRoom {
         this.state = state;
         this.env = env;
         this.cache = null;
+        this.sockets = new Set();
     }
 
     async load() {
@@ -37,6 +38,27 @@ export class LobbyRoom {
 
     async save() {
         await this.state.storage.put('state', this.cache);
+    }
+
+    attachSocket(socket) {
+        this.sockets.add(socket);
+        socket.addEventListener('close', () => {
+            this.sockets.delete(socket);
+        });
+        socket.addEventListener('error', () => {
+            this.sockets.delete(socket);
+        });
+    }
+
+    notifyLobbyChange() {
+        const message = JSON.stringify({ type: 'lobby-updated' });
+        for (const socket of this.sockets) {
+            try {
+                socket.send(message);
+            } catch {
+                this.sockets.delete(socket);
+            }
+        }
     }
 
     pruneState() {
@@ -232,6 +254,10 @@ export class LobbyRoom {
             return this.heartbeat(request, state);
         }
 
+        if (url.pathname === '/api/lobby/subscribe' && request.headers.get('Upgrade') === 'websocket') {
+            return this.subscribeToLobby();
+        }
+
         if (url.pathname === '/api/state' && request.method === 'GET') {
             return this.stateSnapshot(url, state);
         }
@@ -310,6 +336,7 @@ export class LobbyRoom {
         };
 
         await this.save();
+        this.notifyLobbyChange();
         return this.json({ ok: true });
     }
 
@@ -322,7 +349,17 @@ export class LobbyRoom {
 
         state.users[clientId].lastSeen = Date.now();
         await this.save();
+        this.notifyLobbyChange();
         return this.json({ ok: true });
+    }
+
+    subscribeToLobby() {
+        const pair = new WebSocketPair();
+        const [client, server] = Object.values(pair);
+        server.accept();
+        this.attachSocket(server);
+        server.send(JSON.stringify({ type: 'lobby-connected' }));
+        return new Response(null, { status: 101, webSocket: client });
     }
 
     async stateSnapshot(url, state) {
@@ -395,6 +432,7 @@ export class LobbyRoom {
         };
 
         await this.save();
+        this.notifyLobbyChange();
         return this.json({ ok: true, inviteId, toUsername: toUser.username });
     }
 
@@ -412,6 +450,7 @@ export class LobbyRoom {
         if (!accept) {
             invite.status = 'declined';
             await this.save();
+            this.notifyLobbyChange();
             return this.json({ ok: true });
         }
 
@@ -432,6 +471,7 @@ export class LobbyRoom {
         room.status = 'active';
 
         await this.save();
+        this.notifyLobbyChange();
         return this.json({ ok: true, roomId: room.id });
     }
 
@@ -449,6 +489,7 @@ export class LobbyRoom {
         room.playerNames.X = user.username;
         user.roomId = room.id;
         await this.save();
+        this.notifyLobbyChange();
         return this.json({ ok: true, roomId: room.id, code: room.code });
     }
 
@@ -484,6 +525,7 @@ export class LobbyRoom {
         delete state.codes[code];
 
         await this.save();
+        this.notifyLobbyChange();
         return this.json({ ok: true, roomId: room.id });
     }
 
@@ -545,6 +587,7 @@ export class LobbyRoom {
         }
 
         await this.save();
+        this.notifyLobbyChange();
         return this.json(this.buildStatePayload(room, clientId));
     }
 
@@ -570,6 +613,7 @@ export class LobbyRoom {
         room.updatedAt = Date.now();
 
         await this.save();
+        this.notifyLobbyChange();
         return this.json(this.buildStatePayload(room, clientId));
     }
 
@@ -601,6 +645,7 @@ export class LobbyRoom {
         }
 
         await this.save();
+        this.notifyLobbyChange();
         return this.json({ ok: true });
     }
 }

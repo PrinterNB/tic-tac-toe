@@ -7,6 +7,8 @@ const statusElement = document.getElementById('status');
 const resetBtn = document.getElementById('resetBtn');
 const backBtn = document.getElementById('backBtn');
 const roomMeta = document.getElementById('room-meta');
+const copyInviteLinkBtn = document.getElementById('copy-invite-link-btn');
+const inviteLinkStatus = document.getElementById('invite-link-status');
 
 let currentRoom = null;
 let refreshTimer = null;
@@ -35,6 +37,18 @@ function apiFetch(path, options = {}) {
 
         return payload;
     });
+}
+
+function setInviteLinkStatus(message, error = false) {
+    if (!inviteLinkStatus) {
+        return;
+    }
+    inviteLinkStatus.textContent = message;
+    inviteLinkStatus.classList.toggle('error', error);
+}
+
+function getInviteLink(code) {
+    return `${window.location.origin}/online-multiplayer.html?join=${encodeURIComponent(code)}`;
 }
 
 function renderBoard(room) {
@@ -94,6 +108,10 @@ function updateStatus(room) {
 function updateRoomMeta(room) {
     const playerNames = [`X: ${room.playerNames.X || 'Waiting'}`, `O: ${room.playerNames.O || 'Waiting'}`];
     roomMeta.textContent = `Code ${room.code || 'private'} · ${room.boardSize}x${room.boardSize} · ${playerNames.join(' · ')}`;
+
+    if (copyInviteLinkBtn) {
+        copyInviteLinkBtn.hidden = !room.code;
+    }
 }
 
 async function refreshRoom() {
@@ -110,6 +128,21 @@ async function refreshRoom() {
         updateStatus(room);
     } catch (error) {
         statusElement.textContent = error.message;
+    }
+}
+
+async function copyInviteLink() {
+    if (!currentRoom?.code) {
+        setInviteLinkStatus('This room does not have a shareable code.', true);
+        return;
+    }
+
+    const link = getInviteLink(currentRoom.code);
+    try {
+        await navigator.clipboard.writeText(link);
+        setInviteLinkStatus('Invite link copied to clipboard.');
+    } catch {
+        setInviteLinkStatus(link);
     }
 }
 
@@ -169,6 +202,7 @@ async function leaveMatch() {
 boardElement.addEventListener('click', makeMove);
 resetBtn.addEventListener('click', resetGame);
 backBtn.addEventListener('click', leaveMatch);
+copyInviteLinkBtn?.addEventListener('click', copyInviteLink);
 
 refreshRoom();
 refreshTimer = window.setInterval(refreshRoom, 1500);
