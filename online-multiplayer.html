@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe - Online Multiplayer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="online-shell">
+        <div class="online-card" id="username-card">
+            <h1>Online Lobby</h1>
+            <p class="helper-text">Pick a unique username to join the live lobby.</p>
+            <form id="username-form" class="stack-form">
+                <label for="username-input">Username</label>
+                <input id="username-input" name="username" type="text" maxlength="20" autocomplete="nickname" placeholder="Enter username" required>
+                <label for="board-size-input">Default board size</label>
+                <select id="board-size-input" name="boardSize">
+                    <option value="3">3x3 (3 in a row)</option>
+                    <option value="4">4x4 (4 in a row)</option>
+                    <option value="5">5x5 (4 in a row)</option>
+                    <option value="6">6x6 (5 in a row)</option>
+                </select>
+                <button type="submit" class="menu-btn">Enter Lobby</button>
+            </form>
+            <div id="username-error" class="status-message"></div>
+        </div>
+
+        <div class="online-card hidden" id="lobby-card">
+            <div class="online-header">
+                <div>
+                    <h1>Live Players</h1>
+                    <p class="helper-text" id="lobby-summary">Connected and ready to play.</p>
+                </div>
+                <button class="ghost-btn" id="leave-lobby-btn">Change Username</button>
+            </div>
+
+            <div class="grid-two">
+                <section class="panel">
+                    <h2>People Online</h2>
+                    <div id="users-list" class="list-group"></div>
+                </section>
+
+                <section class="panel">
+                    <h2>Private Match</h2>
+                    <label for="room-board-size">Board size</label>
+                    <select id="room-board-size">
+                        <option value="3">3x3 (3 in a row)</option>
+                        <option value="4">4x4 (4 in a row)</option>
+                        <option value="5">5x5 (4 in a row)</option>
+                        <option value="6">6x6 (5 in a row)</option>
+                    </select>
+                    <button id="create-room-btn" class="menu-btn compact-btn">Generate Code</button>
+                    <div class="code-box" id="generated-code-box" aria-live="polite"></div>
+                    <label for="join-code-input">Join by code</label>
+                    <div class="inline-form">
+                        <input id="join-code-input" type="text" maxlength="8" placeholder="Enter code">
+                        <button id="join-code-btn" class="ghost-btn">Join</button>
+                    </div>
+                </section>
+            </div>
+
+            <section class="panel">
+                <h2>Invites</h2>
+                <div id="invites-list" class="list-group"></div>
+            </section>
+
+            <div id="lobby-status" class="status-message"></div>
+        </div>
+    </div>
+    <script src="online-multiplayer-script.js"></script>
+</body>
+</html>

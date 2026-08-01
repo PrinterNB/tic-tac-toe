@@ -358,3 +358,239 @@ h1 {
 .back-btn:active {
     transform: translateY(1px);
 }
+
+/* Online multiplayer styles */
+.online-shell {
+    width: min(1100px, calc(100vw - 2rem));
+    margin: 2rem auto;
+    padding: 1rem 0;
+}
+
+.online-card {
+    background: rgba(9, 14, 28, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 24px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(18px);
+    padding: 1.5rem;
+}
+
+.online-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.helper-text {
+    margin: 0.25rem 0 0;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.stack-form {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 420px;
+    margin-top: 1rem;
+}
+
+.stack-form label,
+.panel label {
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.stack-form input,
+.stack-form select,
+.panel input,
+.panel select,
+.inline-form input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    border-radius: 16px;
+    padding: 0.85rem 1rem;
+    font: inherit;
+    outline: none;
+}
+
+.stack-form input::placeholder,
+.inline-form input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.stack-form input:focus,
+.stack-form select:focus,
+.panel input:focus,
+.panel select:focus,
+.inline-form input:focus {
+    border-color: rgba(78, 205, 196, 0.85);
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.18);
+}
+
+.grid-two {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.panel {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 1rem;
+}
+
+.list-group {
+    display: grid;
+    gap: 0.75rem;
+    min-height: 72px;
+}
+
+.list-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.row-subtitle {
+    margin-top: 0.25rem;
+    font-size: 0.92rem;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.row-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.ghost-btn {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    border-radius: 999px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 700;
+}
+
+.ghost-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.compact-btn {
+    width: 100%;
+    margin-top: 0.75rem;
+}
+
+.inline-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.code-box {
+    margin-top: 0.75rem;
+    padding: 0.9rem 1rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.09);
+    border: 1px dashed rgba(255, 255, 255, 0.28);
+    min-height: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(78, 205, 196, 0.18);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.empty-state {
+    padding: 0.75rem 0.25rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.status-message {
+    margin-top: 1rem;
+    min-height: 1.5rem;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.status-message.error {
+    color: #ff9e9e;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.room-meta {
+    margin: 0.5rem 0 1rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.96rem;
+}
+
+.online-game-container {
+    max-width: 760px;
+}
+
+.cell.clickable {
+    outline: 2px solid rgba(78, 205, 196, 0.35);
+}
+
+@media (max-width: 900px) {
+    .grid-two {
+        grid-template-columns: 1fr;
+    }
+
+    .online-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 640px) {
+    .online-shell {
+        width: min(100vw - 1rem, 1100px);
+        margin: 0.5rem auto;
+    }
+
+    .online-card {
+        padding: 1rem;
+        border-radius: 18px;
+    }
+
+    .inline-form {
+        grid-template-columns: 1fr;
+    }
+
+    .list-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .row-actions {
+        justify-content: flex-start;
+    }
+}

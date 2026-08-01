@@ -1,13 +1,29 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tic-tac-toe",
+  "main": "worker.js",
   "compatibility_date": "2026-04-09",
   "observability": {
     "enabled": true
   },
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS"
   },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "LOBBY",
+        "class_name": "LobbyRoom"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["LobbyRoom"]
+    }
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]
