@@ -494,8 +494,26 @@ async function attemptAutoRegister() {
 }
 
 [boardSizeInput, roomBoardSize].filter(Boolean).forEach((select) => {
-    select.addEventListener('change', () => {
+    select.addEventListener('change', async () => {
         syncBoardSizeSelection(select.value);
+
+        if (!registered || !username) {
+            return;
+        }
+
+        try {
+            await apiFetch('/register', {
+                method: 'POST',
+                body: JSON.stringify({
+                    clientId,
+                    username,
+                    boardSize: getBoardSize()
+                })
+            });
+            await refreshLobby();
+        } catch {
+            // Best-effort; the next lobby refresh will recover.
+        }
     });
 });
 

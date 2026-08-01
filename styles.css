@@ -167,10 +167,28 @@ h1 {
 }
 
 /* Ensure dropdown options have good contrast */
-.board-size-selector select option {
-    background: #45b7d1;
-    color: white;
+.board-size-selector select,
+.stack-form select,
+.panel select {
+    color-scheme: dark;
+}
+
+.board-size-selector select option,
+.stack-form select option,
+.panel select option {
+    background-color: #12324a;
+    color: #ffffff;
     font-weight: bold;
+}
+
+.board-size-selector select option:checked,
+.board-size-selector select option:hover,
+.stack-form select option:checked,
+.stack-form select option:hover,
+.panel select option:checked,
+.panel select option:hover {
+    background: linear-gradient(45deg, #45b7d1, #4ecdc4);
+    color: #ffffff;
 }
 
 .status {
