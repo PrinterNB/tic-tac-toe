@@ -88,7 +88,7 @@ Works in modern browsers, including Chrome, Firefox, Safari, and Edge. No build 
 
 ## Contributing
 
-Contributions are welcome. Please open issues or pull requests with clear descriptions of changes.
+Contributions are welcome. Please open issues or pull requests with clear descriptions of any changes.
 
 ---
 _Minimal, dependency-free project intended for learning and quick demos._
