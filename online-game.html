@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe - Online Match</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container online-game-container">
+        <h1>Online Match</h1>
+        <div class="status" id="status">Connecting...</div>
+        <div class="room-meta" id="room-meta"></div>
+        <button id="copy-invite-link-btn" class="ghost-btn compact-action-btn" type="button" hidden>Copy invite link</button>
+        <div class="row-subtitle" id="invite-link-status"></div>
+        <div class="board-wrapper">
+            <div class="board" id="board"></div>
+        </div>
+        <button id="resetBtn">Reset Game</button>
+        <button class="back-btn" id="backBtn">Leave Match</button>
+    </div>
+    <script src="online-game-script.js"></script>
+</body>
+</html>

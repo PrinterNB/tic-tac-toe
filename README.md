@@ -1,23 +1,26 @@
 # Tic Tac Toe
 
-A modern, self-contained browser Tic Tac Toe game with both local multiplayer and single-player AI modes. The project is lightweight, with no build step or external dependencies, and is designed to run by opening `index.html` in any recent web browser.
+A modern, self-contained browser Tic Tac Toe game with local multiplayer, single-player AI, and an online multiplayer mode backed by Cloudflare Workers and Durable Objects. The local modes remain lightweight and dependency-free, while the online flow runs through Wrangler.
 
 ## Key Features
 
-- Clean main menu with a mobile-friendly responsive layout
-- Two play modes: local Human vs Human and Human vs AI
-- Board sizes: 3x3, 4x4, 5x5, and 6x6 (see notes on AI below)
-- Adaptive winning rules with variable "in-a-row" lengths based on board size
+- Clean main menu with a mobile-friendly responsive layout and a tic-tac-toe favicon
+- Three play modes: local Human vs Human, Human vs AI, and Online Multiplayer
+- Board sizes: 3x3, 4x4, 5x5, and 6x6, with adaptive winning lengths based on board size
 - Three AI difficulty settings: Easy (random), Medium (mixed), and Hard (minimax)
+- Online multiplayer with unique usernames, live lobby presence, websocket updates, invite-based matches, one-time room codes, live board-size syncing, and shared room teardown when a match is left
+- Mobile invite banner in the lobby plus shareable invite links on online matches
 - Controls for resetting the game and returning to the menu on every game screen
 
 ## Quick Start
 
 1. Open `index.html` in your browser.
-2. Choose a mode: Human vs Human or Human vs AI.
+2. Choose a mode: Human vs Human, Human vs AI, or Online Multiplayer.
 3. In Human vs Human, select a board size from the dropdown (3-6).
 4. In Human vs AI, select a difficulty level (Easy, Medium, Hard) and play.
 5. Use `Reset Game` to restart and `Back to Menu` to return.
+6. In Online Multiplayer, enter a unique username, invite a player from the live list, accept incoming invites from the mobile banner or invite list, or generate a code for a private room.
+7. When a code room is open, use the copy invite link button on the match screen to share `?join=CODE` with someone else.
 
 ## Board Sizes & Winning Rules
 
@@ -39,10 +42,17 @@ Note: the Human vs AI HTML/UI does not include a board-size selector, and the AI
 - `index.html` - Main menu and navigation
 - `human-vs-human.html` - Local two-player game UI
 - `human-vs-ai.html` - Single-player UI with difficulty controls
-- `styles.css` - Styling for menu and game screens
+- `online-multiplayer.html` - Online lobby for usernames, invites, and room codes
+- `online-game.html` - Online match board view with invite-link copying for code rooms
+- `styles.css` - Styling for menu, game screens, and the mobile invite banner
 - `script.js` - Main menu interactions and navigation
 - `game-script.js` - Human vs Human game logic, including board rendering, win/draw logic, and the board-size selector
 - `ai-game-script.js` - Human vs AI logic, including minimax, difficulty modes, and AI move handling
+- `online-multiplayer-script.js` - Lobby registration, websocket lobby updates, invite flow, and room-code creation/joining
+- `online-game-script.js` - Online match rendering, turn submission, and invite-link copying
+- `worker.js` - Cloudflare Worker and Durable Object lobby/game state handler
+- `wrangler.jsonc` - Wrangler configuration for the Worker, assets binding, and Durable Object migration
+- `favicon.svg` - Tic-tac-toe board favicon used in the browser tab
 
 ## Notes for Developers
 
@@ -62,7 +72,19 @@ Works in modern browsers, including Chrome, Firefox, Safari, and Edge. No build 
 
 - Visual tweaks: edit `styles.css`.
 - Gameplay rules or board sizes: edit `game-script.js` and `ai-game-script.js`.
-- Add features like score tracking or online multiplayer by extending the JavaScript logic and adding persistent storage or networking.
+- Online multiplayer behavior lives in `online-multiplayer-script.js`, `online-game-script.js`, and `worker.js`.
+- Wrangler serves the site through `worker.js`, with `wrangler.jsonc` defining the `ASSETS` binding and the `LOBBY` Durable Object.
+
+## Online Multiplayer Notes
+
+- Username values must be unique among currently connected players.
+- Clicking a player in the live lobby creates a pending invite.
+- Incoming invites appear in a mobile-friendly banner at the top of the lobby, along with the invite list.
+- Generating a code creates a one-time private room.
+- The lobby shows each player’s selected board size, and changing your size updates the lobby live for others without a refresh.
+- The online match board uses the same board-size rules as the local Human vs Human mode.
+- Code-room matches can generate a shareable invite link from the match screen.
+- For local development and deployment, use Wrangler so the Worker, assets binding, and Durable Object bindings are available.
 
 ## Contributing
 
