@@ -8,8 +8,7 @@ A modern, self-contained browser Tic Tac Toe game with local multiplayer, single
 - Three play modes: local Human vs Human, Human vs AI, and Online Multiplayer
 - Board sizes: 3x3, 4x4, 5x5, and 6x6, with adaptive winning lengths based on board size
 - Three AI difficulty settings: Easy (random), Medium (mixed), and Hard (minimax)
-- Online multiplayer with unique usernames, live lobby presence, websocket updates, invite-based matches, one-time room codes, live board-size syncing, lobby invite links, and shared room teardown when a match is left
-- Lobby matches support a 6x6 board, 4-in-a-row to win, and letter selection from X, O, Y, or Z before the game starts
+- Online multiplayer with unique usernames, live lobby presence, websocket updates, invite-based matches, one-time room codes, live board-size syncing, and shared room teardown when a match is left
 - Mobile invite banner in the lobby plus shareable invite links on online matches
 - Controls for resetting the game and returning to the menu on every game screen
 
@@ -20,8 +19,8 @@ A modern, self-contained browser Tic Tac Toe game with local multiplayer, single
 3. In Human vs Human, select a board size from the dropdown (3-6).
 4. In Human vs AI, select a difficulty level (Easy, Medium, Hard) and play.
 5. Use `Reset Game` to restart and `Back to Menu` to return.
-6. In Online Multiplayer, enter a unique username, invite a player from the live list, accept incoming invites from the mobile banner or invite list, create a 6x6 lobby match, or generate a code for a private room.
-7. When a code or lobby room is open, use the copy invite link button on the match screen or the lobby invite link flow to share `?join=CODE` with someone else.
+6. In Online Multiplayer, enter a unique username, invite a player from the live list, accept incoming invites from the mobile banner or invite list, or generate a code for a private room.
+7. When a code room is open, use the copy invite link button on the match screen to share `?join=CODE` with someone else.
 
 ## Board Sizes & Winning Rules
 
@@ -80,7 +79,6 @@ Works in modern browsers, including Chrome, Firefox, Safari, and Edge. No build 
 
 - Username values must be unique among currently connected players.
 - Clicking a player in the live lobby creates a pending invite.
-- Clicking Invite to Lobby creates a 6x6 room with 4 in a row to win and lets each player choose X, O, Y, or Z before the match starts.
 - Incoming invites appear in a mobile-friendly banner at the top of the lobby, along with the invite list.
 - Generating a code creates a one-time private room.
 - The lobby shows each player’s selected board size, and changing your size updates the lobby live for others without a refresh.

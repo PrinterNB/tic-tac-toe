@@ -9,7 +9,6 @@ const usernameForm = document.getElementById('username-form');
 const usernameInput = document.getElementById('username-input');
 const boardSizeInput = document.getElementById('board-size-input');
 const roomBoardSize = document.getElementById('room-board-size');
-const lobbyLetterInput = document.getElementById('lobby-letter-input');
 const usersList = document.getElementById('users-list');
 const invitesList = document.getElementById('invites-list');
 const lobbyStatus = document.getElementById('lobby-status');
@@ -20,7 +19,6 @@ const createRoomBtn = document.getElementById('create-room-btn');
 const joinCodeBtn = document.getElementById('join-code-btn');
 const joinCodeInput = document.getElementById('join-code-input');
 const generatedCodeBox = document.getElementById('generated-code-box');
-const createLobbyBtn = document.getElementById('create-lobby-btn');
 const copyInviteLinkBtn = document.getElementById('copy-invite-link-btn');
 const inviteLinkStatus = document.getElementById('invite-link-status');
 const inviteBanner = document.getElementById('invite-banner');
@@ -197,12 +195,7 @@ function renderUsers(users) {
                     <strong>${escapeHtml(user.username)}</strong>
                     <div class="row-subtitle">${isSelf ? 'You' : 'Online'}${statusText} · ${boardSizeLabel}</div>
                 </div>
-                ${isSelf ? '<span class="pill">You</span>' : `
-                    <div class="row-actions">
-                        <button class="ghost-btn invite-btn" data-client-id="${escapeHtml(user.clientId)}">Invite</button>
-                        <button class="ghost-btn lobby-invite-btn" data-client-id="${escapeHtml(user.clientId)}" data-username="${escapeHtml(user.username)}">Invite to Lobby</button>
-                    </div>
-                `}
+                ${isSelf ? '<span class="pill">You</span>' : `<button class="ghost-btn invite-btn" data-client-id="${escapeHtml(user.clientId)}">Invite</button>`}
             </div>
         `;
     }).join('');
@@ -211,13 +204,6 @@ function renderUsers(users) {
         button.addEventListener('click', async () => {
             const targetClientId = button.getAttribute('data-client-id');
             await invitePlayer(targetClientId);
-        });
-    });
-
-    document.querySelectorAll('.lobby-invite-btn').forEach((button) => {
-        button.addEventListener('click', async () => {
-            const targetUsername = button.getAttribute('data-username') || 'someone';
-            await createLobbyRoom(targetUsername);
         });
     });
 }
@@ -393,38 +379,6 @@ async function createRoom() {
     }
 }
 
-async function createLobbyRoom(targetUsername = '') {
-    const letter = lobbyLetterInput?.value || 'X';
-
-    try {
-        const response = await apiFetch('/room/create', {
-            method: 'POST',
-            body: JSON.stringify({
-                clientId,
-                mode: 'lobby',
-                boardSize: 6,
-                winningLength: 4,
-                letter
-            })
-        });
-
-        generatedCodeBox.textContent = `Code: ${response.code}`;
-        const inviteLink = getInviteLink(response.code);
-        try {
-            await navigator.clipboard.writeText(inviteLink);
-            setInviteLinkStatus('Lobby invite link copied to clipboard.');
-        } catch {
-            setInviteLinkStatus(inviteLink);
-        }
-
-        setLobbyMessage(`Lobby room created for a 6x6 game. Send the link to ${targetUsername || 'anyone'} and choose letters X, O, Y, or Z on the room screen.`);
-        const params = new URLSearchParams({ roomId: response.roomId, clientId });
-        window.location.href = `online-game.html?${params.toString()}`;
-    } catch (error) {
-        setLobbyMessage(error.message, true);
-    }
-}
-
 async function joinRoomByCode() {
     const code = joinCodeInput.value.trim().toUpperCase();
     if (!code) {
@@ -565,7 +519,6 @@ async function attemptAutoRegister() {
 
 usernameForm.addEventListener('submit', registerUsername);
 createRoomBtn.addEventListener('click', createRoom);
-createLobbyBtn?.addEventListener('click', () => createLobbyRoom());
 joinCodeBtn.addEventListener('click', joinRoomByCode);
 copyInviteLinkBtn?.addEventListener('click', copyInviteLink);
 leaveLobbyBtn.addEventListener('click', () => {
